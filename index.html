@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MesinKuat - Bengkel Spesialis Kendaraan</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --orange: #f05a00;
+    --orange-dim: #c04400;
+    --orange-glow: rgba(240,90,0,0.15);
+    --steel: #8a8f96;
+    --light: #e8e4dc;
+    --white: #f5f2ee;
+    --red: #c0392b;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--light);
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.5;
+  }
+
+  /* ── UTILITY ── */
+  .tag {
+    display: inline-block;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--orange);
+    border: 1px solid var(--orange);
+    padding: 3px 10px;
+    margin-bottom: 16px;
+  }
+
+  .rule {
+    width: 48px;
+    height: 3px;
+    background: var(--orange);
+    margin-bottom: 20px;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 900;
+    background: rgba(14,14,14,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 6vw;
+    height: 60px;
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 0.05em;
+    color: var(--white);
+  }
+
+  .nav-logo span { color: var(--orange); }
+
+  .nav-cta {
+    background: var(--orange);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 9px 22px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .nav-cta:hover { background: var(--orange-dim); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    padding: 80px 6vw 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #hero::after {
+    content: '';
+    position: absolute;
+    right: -10%;
+    top: -5%;
+    width: 55%;
+    height: 110%;
+    background: var(--surface);
+    clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
+    z-index: 0;
+  }
+
+  .hero-content { position: relative; z-index: 2; }
+
+  .hero-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(56px, 8vw, 110px);
+    line-height: 0.92;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+
+  h1 .accent { color: var(--orange); display: block; }
+
+  .hero-sub {
+    font-size: 17px;
+    color: var(--steel);
+    max-width: 420px;
+    margin-bottom: 36px;
+    line-height: 1.7;
+  }
+
+  .hero-sub strong { color: var(--light); }
+
+  .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+
+  .btn-primary {
+    background: var(--orange);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 14px 32px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--orange-dim); transform: translateY(-2px); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--light);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 13px 28px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    text-decoration: none;
+    transition: border-color 0.2s, color 0.2s;
+    display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+
+  .hero-image-col {
+    position: relative;
+    z-index: 2;
+    height: 100%;
+    min-height: 520px;
+    display: flex;
+    align-items: flex-end;
+    padding-bottom: 40px;
+  }
+
+  .hero-img-placeholder {
+    width: 100%;
+    height: 480px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--steel);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    gap: 10px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-img-placeholder::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 18px,
+      rgba(255,255,255,0.015) 18px,
+      rgba(255,255,255,0.015) 19px
+    );
+  }
+
+  .img-icon {
+    width: 56px; height: 56px;
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; color: var(--border);
+  }
+
+  /* stat strip */
+  .hero-stats {
+    position: absolute;
+    bottom: 0; left: 6vw; right: 0;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    display: flex;
+    z-index: 3;
+  }
+
+  .stat-item {
+    padding: 18px 36px;
+    border-right: 1px solid var(--border);
+    flex: 1;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 38px;
+    color: var(--orange);
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--steel);
+    margin-top: 3px;
+  }
+
+  /* ── OPENING / PROBLEM ── */
+  #opening {
+    padding: 100px 6vw;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .opening-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.5fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .opening-left h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(42px, 5vw, 72px);
+    line-height: 0.95;
+    color: var(--white);
+    margin-bottom: 24px;
+  }
+
+  .opening-left h2 em {
+    color: var(--orange);
+    font-style: normal;
+  }
+
+  .opening-right p {
+    color: var(--steel);
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  .opening-right p strong { color: var(--light); }
+
+  .pain-list {
+    list-style: none;
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pain-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--bg);
+    border-left: 3px solid var(--red);
+    font-size: 15px;
+    color: var(--steel);
+  }
+
+  .pain-list li::before {
+    content: 'X';
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--red);
+    flex-shrink: 0;
+  }
+
+  /* ── BENEFIT ── */
+  #benefit {
+    padding: 100px 6vw;
+  }
+
+  .section-header {
+    margin-bottom: 60px;
+  }
+
+  .section-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(38px, 5vw, 64px);
+    line-height: 0.95;
+    color: var(--white);
+    max-width: 700px;
+  }
+
+  .section-header h2 span { color: var(--orange); }
+
+  .benefit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: var(--border);
+  }
+
+  .benefit-card {
+    background: var(--surface);
+    padding: 36px 32px;
+    transition: background 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .benefit-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 0;
+    background: var(--orange);
+    transition: height 0.35s;
+  }
+
+  .benefit-card:hover { background: var(--surface2); }
+  .benefit-card:hover::before { height: 100%; }
+
+  .benefit-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 56px;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 12px;
+    transition: color 0.25s;
+  }
+
+  .benefit-card:hover .benefit-num { color: var(--orange-dim); }
+
+  .benefit-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .benefit-desc {
+    font-size: 14px;
+    color: var(--steel);
+    line-height: 1.7;
+  }
+
+  /* ── ALASAN / WHY US ── */
+  #alasan {
+    padding: 100px 6vw;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .alasan-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: start;
+  }
+
+  .alasan-img-placeholder {
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--steel);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    gap: 10px;
+    position: sticky;
+    top: 80px;
+  }
+
+  .alasan-right h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 4vw, 58px);
+    line-height: 0.95;
+    color: var(--white);
+    margin-bottom: 36px;
+  }
+
+  .alasan-right h2 span { color: var(--orange); }
+
+  .reason-list { display: flex; flex-direction: column; gap: 0; }
+
+  .reason-item {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: padding-left 0.25s;
+  }
+
+  .reason-item:hover { padding-left: 8px; }
+
+  .reason-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--orange);
+    line-height: 1;
+    padding-top: 4px;
+  }
+
+  .reason-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .reason-body {
+    font-size: 14px;
+    color: var(--steel);
+    line-height: 1.7;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+
+  .reason-item.open .reason-body { max-height: 200px; }
+
+  /* ── TESTIMONI ── */
+  #testimoni {
+    padding: 100px 6vw;
+  }
+
+  .testi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 50px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .testi-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(36px, 4.5vw, 60px);
+    line-height: 0.95;
+    color: var(--white);
+  }
+
+  .testi-header h2 span { color: var(--orange); }
+
+  .testi-nav { display: flex; gap: 8px; }
+
+  .testi-btn {
+    width: 44px; height: 44px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--steel);
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .testi-btn:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+
+  .testi-track-wrap { overflow: hidden; }
+
+  .testi-track {
+    display: flex;
+    gap: 20px;
+    transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .testi-card {
+    flex: 0 0 calc(33.33% - 14px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+  }
+
+  @media (max-width: 900px) {
+    .testi-card { flex: 0 0 calc(50% - 10px); }
+  }
+  @media (max-width: 600px) {
+    .testi-card { flex: 0 0 calc(100%); }
+  }
+
+  .testi-quote {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: var(--orange);
+    line-height: 0.6;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+
+  .testi-text {
+    font-size: 15px;
+    color: var(--steel);
+    line-height: 1.75;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .testi-meta { display: flex; align-items: center; gap: 14px; }
+
+  .testi-avatar {
+    width: 44px; height: 44px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    color: var(--orange);
+  }
+
+  .testi-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+
+  .testi-role {
+    font-size: 12px;
+    color: var(--steel);
+    letter-spacing: 0.05em;
+  }
+
+  .testi-stars {
+    position: absolute;
+    top: 28px; right: 28px;
+    color: var(--orange);
+    font-size: 13px;
+    letter-spacing: 2px;
+  }
+
+  /* ── URGENSI ── */
+  #urgensi {
+    padding: 80px 6vw;
+    background: var(--orange);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #urgensi::before {
+    content: 'TERBATAS';
+    position: absolute;
+    right: -2%;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 14vw, 200px);
+    color: rgba(0,0,0,0.1);
+    line-height: 1;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+
+  .urgensi-inner {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 60px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .urgensi-text h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(38px, 5vw, 68px);
+    line-height: 0.95;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .urgensi-text p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.8);
+    max-width: 520px;
+  }
+
+  .countdown {
+    display: flex;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .cd-unit {
+    background: rgba(0,0,0,0.2);
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 80px;
+  }
+
+  .cd-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: #fff;
+    line-height: 1;
+    display: block;
+  }
+
+  .cd-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ── BONUS ── */
+  #bonus {
+    padding: 100px 6vw;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .bonus-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 50px;
+  }
+
+  .bonus-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 30px 28px;
+    position: relative;
+    transition: border-color 0.25s;
+  }
+
+  .bonus-card:hover { border-color: var(--orange); }
+
+  .bonus-badge {
+    position: absolute;
+    top: -1px; right: 20px;
+    background: var(--orange);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fff;
+    padding: 4px 10px;
+  }
+
+  .bonus-icon {
+    width: 48px; height: 48px;
+    border: 2px solid var(--orange);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--orange);
+    font-size: 22px;
+    margin-bottom: 18px;
+  }
+
+  .bonus-title {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--white);
+    margin-bottom: 10px;
+  }
+
+  .bonus-desc {
+    font-size: 14px;
+    color: var(--steel);
+    line-height: 1.7;
+  }
+
+  .bonus-value {
+    margin-top: 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    color: var(--orange);
+  }
+
+  .bonus-value s { color: var(--steel); margin-right: 6px; }
+
+  /* ── CTA UTAMA ── */
+  #cta {
+    padding: 100px 6vw;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #cta::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, var(--orange-glow) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .cta-inner {
+    max-width: 780px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .cta-inner h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(44px, 6vw, 88px);
+    line-height: 0.9;
+    color: var(--white);
+    margin-bottom: 20px;
+  }
+
+  .cta-inner h2 span { color: var(--orange); display: block; }
+
+  .cta-inner p {
+    font-size: 17px;
+    color: var(--steel);
+    max-width: 500px;
+    margin: 0 auto 40px;
+    line-height: 1.7;
+  }
+
+  .cta-form {
+    display: flex;
+    gap: 0;
+    max-width: 520px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+  }
+
+  .cta-input {
+    flex: 1;
+    min-width: 200px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-right: none;
+    color: var(--white);
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    padding: 14px 18px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .cta-input:focus { border-color: var(--orange); }
+  .cta-input::placeholder { color: var(--steel); }
+
+  .cta-submit {
+    background: var(--orange);
+    color: #fff;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 14px 28px;
+    border: 1px solid var(--orange);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .cta-submit:hover { background: var(--orange-dim); }
+
+  .cta-note {
+    font-size: 12px;
+    color: var(--steel);
+    margin-top: 14px;
+  }
+
+  /* ── GARANSI ── */
+  #garansi {
+    padding: 80px 6vw;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .garansi-inner {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 900px;
+  }
+
+  .garansi-seal {
+    width: 160px; height: 160px;
+    border: 3px solid var(--orange);
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .garansi-seal::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+  }
+
+  .garansi-seal-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    color: var(--orange);
+    line-height: 1;
+  }
+
+  .garansi-seal-unit {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--steel);
+  }
+
+  .garansi-seal-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--white);
+    letter-spacing: 0.05em;
+  }
+
+  .garansi-content h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(30px, 3.5vw, 48px);
+    color: var(--white);
+    margin-bottom: 14px;
+    line-height: 1;
+  }
+
+  .garansi-content h2 span { color: var(--orange); }
+
+  .garansi-content p {
+    font-size: 15px;
+    color: var(--steel);
+    line-height: 1.8;
+  }
+
+  .garansi-points {
+    list-style: none;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .garansi-points li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--steel);
+  }
+
+  .garansi-points li::before {
+    content: 'V';
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 16px;
+    color: var(--orange);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── NB ── */
+  #nb {
+    padding: 60px 6vw;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+  }
+
+  .nb-box {
+    background: var(--surface2);
+    border-left: 4px solid var(--orange);
+    padding: 28px 32px;
+    max-width: 900px;
+  }
+
+  .nb-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    color: var(--orange);
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .nb-box p {
+    font-size: 14px;
+    color: var(--steel);
+    line-height: 1.8;
+    margin-bottom: 8px;
+  }
+
+  .nb-box p:last-child { margin-bottom: 0; }
+
+  .nb-box strong { color: var(--light); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 40px 6vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .footer-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    color: var(--white);
+  }
+
+  .footer-brand span { color: var(--orange); }
+
+  .footer-copy {
+    font-size: 12px;
+    color: var(--steel);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.65s ease, transform 0.65s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    .benefit-grid { grid-template-columns: repeat(2, 1fr); }
+    .bonus-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 860px) {
+    #hero { grid-template-columns: 1fr; min-height: auto; padding-top: 100px; }
+    #hero::after { display: none; }
+    .hero-image-col { min-height: 300px; }
+    .hero-stats { position: static; flex-wrap: wrap; }
+    .opening-grid { grid-template-columns: 1fr; gap: 40px; }
+    .alasan-layout { grid-template-columns: 1fr; }
+    .alasan-img-placeholder { position: static; aspect-ratio: 16/9; }
+    .urgensi-inner { grid-template-columns: 1fr; gap: 32px; }
+    .garansi-inner { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .garansi-points li { justify-content: center; }
+    .hero-img-placeholder {
+        height: 280px !important;
+        min-height: auto !important;
+    }
+    
+    .hero-img-placeholder .img-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+    }
+    
+    /* Khusus untuk foto di alasan section */
+    .alasan-img-placeholder {
+        height: 200px !important;
+        aspect-ratio: 16/9;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .benefit-grid { grid-template-columns: 1fr; }
+    .bonus-grid { grid-template-columns: 1fr; }
+    .countdown { flex-wrap: wrap; justify-content: center; }
+    .hero-stats { display: grid; grid-template-columns: 1fr 1fr; }
+    .cta-form { flex-direction: column; }
+    .cta-input { border-right: 1px solid var(--border); border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Mesin<span>Kuat</span></div>
+  <a href="#cta" class="nav-cta">Booking Sekarang</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-content">
+    <p class="hero-eyebrow">Bengkel Spesialis Kendaraan Roda Empat</p>
+    <h1>
+      Mesin
+      <span class="accent">Sehat,</span>
+      Jalan Aman.
+    </h1>
+    <p class="hero-sub">
+      Kendaraan Anda bukan sekadar alat transportasi. Itu tanggung jawab.
+      <strong>MesinKuat hadir untuk memastikan setiap komponen bekerja sebagaimana mestinya</strong> — tidak ada kompromi, tidak ada tebak-tebakan.
+    </p>
+    <div class="hero-btns">
+      <a href="#cta" class="btn-primary">Booking Servis</a>
+      <a href="#benefit" class="btn-outline">Lihat Layanan</a>
+    </div>
+  </div>
+  <div class="hero-image-col">
+    <div class="hero-img-placeholder">
+      <div class="img-icon">[ ]</div>
+      <img src="https://i.pinimg.com/736x/f0/22/cd/f022cd68acdc5841490108a8f746ba0c.jpg">
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">3.800+</div>
+      <div class="stat-label">Kendaraan Ditangani</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">9 Thn</div>
+      <div class="stat-label">Pengalaman Operasional</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">98%</div>
+      <div class="stat-label">Pelanggan Puas</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">30 Hari</div>
+      <div class="stat-label">Garansi Pengerjaan</div>
+    </div>
+  </div>
+</section>
+
+<!-- OPENING / PROBLEM -->
+<section id="opening">
+  <div class="opening-grid">
+    <div class="opening-left reveal">
+      <div class="tag">Kenali Masalahnya</div>
+      <h2>Bengkel Asal-<em>asalan</em> Lebih Mahal di Akhir.</h2>
+    </div>
+    <div class="opening-right reveal">
+      <p>
+        Banyak pemilik kendaraan baru menyadari masalah serius setelah keluar dari bengkel yang salah.
+        <strong>Pengecekan setengah hati, spare part tidak original, dan mekanik tanpa sertifikasi</strong> adalah kombinasi berbahaya yang menguras kantong Anda lebih dalam dari yang dibayangkan.
+      </p>
+      <p>
+        Di sinilah kami memulai percakapan jujur. Bukan janji kosong — tapi standar kerja yang bisa Anda periksa sendiri.
+      </p>
+      <ul class="pain-list">
+        <li>Servis sudah mahal, masalah muncul lagi seminggu kemudian</li>
+        <li>Mekanik tidak menjelaskan apa yang sebenarnya dikerjakan</li>
+        <li>Spare part yang dipasang ternyata KW tanpa sepengetahuan Anda</li>
+        <li>Estimasi biaya berubah drastis di tengah pengerjaan</li>
+        <li>Tidak ada garansi setelah kendaraan keluar dari bengkel</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- BENEFIT -->
+<section id="benefit">
+  <div class="section-header reveal">
+    <div class="tag">Layanan Kami</div>
+    <div class="rule"></div>
+    <h2>Semua yang Kendaraan Anda <span>Butuhkan</span></h2>
+  </div>
+  <div class="benefit-grid">
+    <div class="benefit-card reveal">
+      <div class="benefit-num">01</div>
+      <div class="benefit-title">Servis Berkala Menyeluruh</div>
+      <p class="benefit-desc">Pengecekan 50 titik secara sistematis — oli, filter, rem, suspensi, sistem pendingin, hingga sistem elektrikal — dilengkapi laporan digital yang dikirim langsung ke ponsel Anda.</p>
+    </div>
+    <div class="benefit-card reveal">
+      <div class="benefit-num">02</div>
+      <div class="benefit-title">Perbaikan Mesin & Transmisi</div>
+      <p class="benefit-desc">Diagnosa menggunakan alat scanner OBD-II generasi terbaru. Setiap keputusan perbaikan dikonsultasikan terlebih dahulu sebelum pengerjaan dimulai — transparansi penuh, tidak ada biaya tersembunyi.</p>
+    </div>
+    <div class="benefit-card reveal">
+      <div class="benefit-num">03</div>
+      <div class="benefit-title">Spesialis AC Kendaraan</div>
+      <p class="benefit-desc">Isi freon, ganti evaporator, perbaikan kompresor AC — ditangani oleh teknisi bersertifikat dengan spare part bergaransi resmi dari distributor terpercaya.</p>
+    </div>
+    <div class="benefit-card reveal">
+      <div class="benefit-num">04</div>
+      <div class="benefit-title">Spooring & Balancing Presisi</div>
+      <p class="benefit-desc">Menggunakan mesin Hunter DSP600 dengan akurasi 1/100 derajat. Setir lurus sempurna, ban awet lebih lama, konsumsi BBM lebih efisien.</p>
+    </div>
+    <div class="benefit-card reveal">
+      <div class="benefit-num">05</div>
+      <div class="benefit-title">Instalasi Aksesoris & Modifikasi</div>
+      <p class="benefit-desc">Dari audio system, tint film, hingga modifikasi suspensi — dikerjakan oleh spesialis dengan standar keamanan penuh dan tidak menggugurkan klaim asuransi kendaraan Anda.</p>
+    </div>
+    <div class="benefit-card reveal">
+      <div class="benefit-num">06</div>
+      <div class="benefit-title">Antar Jemput Kendaraan</div>
+      <p class="benefit-desc">Tidak sempat ke bengkel? Tim driver kami siap menjemput kendaraan Anda, mengerjakan servis, dan mengantarkan kembali ke rumah atau kantor Anda. Gratis untuk area tertentu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ALASAN / WHY US -->
+<section id="alasan">
+  <div class="alasan-layout">
+    <div class="alasan-img-placeholder reveal">
+      <img src="https://i.pinimg.com/736x/cd/65/f0/cd65f012257538b4ae96a00881e02f21.jpg">
+    </div>
+    <div class="alasan-right">
+      <div class="tag reveal">Mengapa MesinKuat</div>
+      <h2 class="reveal">Bukan Sekadar <span>Bengkel Biasa.</span></h2>
+      <div class="reason-list">
+        <div class="reason-item" onclick="toggleReason(this)">
+          <div class="reason-num">01</div>
+          <div>
+            <div class="reason-title">Mekanik Bersertifikat Nasional</div>
+            <div class="reason-body">Seluruh mekanik kami memiliki sertifikasi Badan Nasional Sertifikasi Profesi (BNSP) dan menjalani pelatihan ulang setiap tahun. Kompetensi bukan asumsi — itu syarat wajib bekerja di sini.</div>
+          </div>
+        </div>
+        <div class="reason-item" onclick="toggleReason(this)">
+          <div class="reason-num">02</div>
+          <div>
+            <div class="reason-title">Spare Part Original Bergaransi</div>
+            <div class="reason-body">Kami hanya menggunakan suku cadang original dari distributor resmi. Setiap part yang dipasang disertai nota pembelian, dan Anda berhak meminta struk asli untuk verifikasi mandiri.</div>
+          </div>
+        </div>
+        <div class="reason-item" onclick="toggleReason(this)">
+          <div class="reason-num">03</div>
+          <div>
+            <div class="reason-title">Laporan Pengerjaan Transparan</div>
+            <div class="reason-body">Sebelum pengerjaan dimulai, Anda menerima estimasi biaya rinci. Setelah selesai, laporan lengkap dengan foto kondisi sebelum dan sesudah dikirimkan melalui WhatsApp. Tidak ada yang disembunyikan.</div>
+          </div>
+        </div>
+        <div class="reason-item" onclick="toggleReason(this)">
+          <div class="reason-num">04</div>
+          <div>
+            <div class="reason-title">Peralatan Diagnostik Modern</div>
+            <div class="reason-body">Investasi kami di alat diagnostik bukan untuk gaya-gayaan. Scanner OBD-II terkini membantu kami menemukan akar masalah dengan akurat — bukan coba-coba yang membuang waktu dan uang Anda.</div>
+          </div>
+        </div>
+        <div class="reason-item" onclick="toggleReason(this)">
+          <div class="reason-num">05</div>
+          <div>
+            <div class="reason-title">Garansi Pengerjaan 30 Hari</div>
+            <div class="reason-body">Jika masalah yang sama muncul kembali dalam 30 hari setelah pengerjaan, kami tangani ulang tanpa biaya tambahan. Garansi ini berlaku tertulis dan tidak ada syarat tersembunyi.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONI -->
+<section id="testimoni">
+  <div class="testi-header">
+    <div>
+      <div class="tag">Kata Mereka</div>
+      <h2>Dipercaya <span>Ribuan</span><br>Pemilik Kendaraan</h2>
+    </div>
+    <div class="testi-nav">
+      <button class="testi-btn" onclick="slideTesti(-1)">&#8592;</button>
+      <button class="testi-btn" onclick="slideTesti(1)">&#8594;</button>
+    </div>
+  </div>
+  <div class="testi-track-wrap">
+    <div class="testi-track" id="testiTrack">
+      <div class="testi-card">
+        <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Sudah 4 tahun servis rutin di sini. Yang paling saya hargai adalah kejujuran mereka. Pernah saya minta ganti part yang sebenarnya masih layak, dan mereka justru menyarankan untuk tidak diganti dulu. Langka sekali bengkel seperti ini.</p>
+        <div class="testi-meta">
+          <div class="testi-avatar">RM</div>
+          <div>
+            <div class="testi-name">Rizaldi M.</div>
+            <div class="testi-role">Toyota Fortuner 2019</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Mobil saya bergetar parah di kecepatan tinggi. Bengkel sebelumnya sudah balancing 3 kali tapi masalah tidak selesai. Di MesinKuat, diagnosa kurang dari 30 menit, ternyata masalah di bearing roda. Langsung beres, tidak ada getaran lagi.</p>
+        <div class="testi-meta">
+          <div class="testi-avatar">DK</div>
+          <div>
+            <div class="testi-name">Dian K.</div>
+            <div class="testi-role">Honda HRV 2021</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Layanan antar jemputnya sangat membantu. Saya tinggal WhatsApp, mereka jemput pagi, selesai siang, dan kendaraan sudah kembali sebelum saya pulang kantor. Laporan via foto dikirim real-time. Sangat profesional.</p>
+        <div class="testi-meta">
+          <div class="testi-avatar">SF</div>
+          <div>
+            <div class="testi-name">Sari F.</div>
+            <div class="testi-role">Mitsubishi Xpander 2022</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">AC mobil saya mati total di tengah jalan. Hubungi MesinKuat, mereka berikan estimasi biaya dulu sebelum mulai kerja. Tidak ada kejutan di tagihan akhir. Selesai tepat waktu dan AC sekarang dinginnya lebih dari sebelum rusak.</p>
+        <div class="testi-meta">
+          <div class="testi-avatar">AB</div>
+          <div>
+            <div class="testi-name">Andi B.</div>
+            <div class="testi-role">Suzuki Ertiga 2020</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="testi-quote">"</div>
+        <p class="testi-text">Garansi 30 harinya bukan janji kosong. Seminggu setelah ganti kampas rem, ada bunyi aneh. Saya hubungi, langsung dijadwalkan besok paginya, diperiksa ulang tanpa dikenakan biaya sepeserpun. Itu yang membuat saya terus kembali.</p>
+        <div class="testi-meta">
+          <div class="testi-avatar">YP</div>
+          <div>
+            <div class="testi-name">Yusuf P.</div>
+            <div class="testi-role">Daihatsu Terios 2018</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- URGENSI -->
+<section id="urgensi">
+  <div class="urgensi-inner">
+    <div class="urgensi-text reveal">
+      <h2>Promo Servis<br>Berkala Berakhir</h2>
+      <p>Dapatkan diskon 25% untuk servis berkala lengkap plus pengecekan 50 titik gratis. Hanya untuk 40 slot terakhir bulan ini. Setelah slot habis, harga kembali normal.</p>
+    </div>
+    <div class="countdown">
+      <div class="cd-unit">
+        <span class="cd-num" id="cdDays">00</span>
+        <span class="cd-label">Hari</span>
+      </div>
+      <div class="cd-unit">
+        <span class="cd-num" id="cdHours">00</span>
+        <span class="cd-label">Jam</span>
+      </div>
+      <div class="cd-unit">
+        <span class="cd-num" id="cdMins">00</span>
+        <span class="cd-label">Menit</span>
+      </div>
+      <div class="cd-unit">
+        <span class="cd-num" id="cdSecs">00</span>
+        <span class="cd-label">Detik</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BONUS -->
+<section id="bonus">
+  <div class="section-header reveal">
+    <div class="tag">Bonus Eksklusif</div>
+    <div class="rule"></div>
+    <h2>Yang Anda Dapat <span>Lebih</span> dari Sekadar Servis</h2>
+  </div>
+  <div class="bonus-grid">
+    <div class="bonus-card reveal">
+      <div class="bonus-badge">GRATIS</div>
+      <div class="bonus-icon">S</div>
+      <div class="bonus-title">Scan Diagnostik OBD-II</div>
+      <p class="bonus-desc">Pengecekan sistem elektrikal lengkap menggunakan scanner profesional. Kami cetak hasil scan dan jelaskan kondisi setiap sensor kendaraan Anda.</p>
+      <div class="bonus-value"><s>Rp 150.000</s> Gratis untuk booking bulan ini</div>
+    </div>
+    <div class="bonus-card reveal">
+      <div class="bonus-badge">GRATIS</div>
+      <div class="bonus-icon">C</div>
+      <div class="bonus-title">Cuci Eksterior Premium</div>
+      <p class="bonus-desc">Setiap kendaraan yang masuk workshop mendapat layanan cuci eksterior menggunakan sampo pH-balanced dan foam cannon — tanpa biaya tambahan.</p>
+      <div class="bonus-value"><s>Rp 75.000</s> Gratis setiap kunjungan</div>
+    </div>
+    <div class="bonus-card reveal">
+      <div class="bonus-badge">GRATIS</div>
+      <div class="bonus-icon">R</div>
+      <div class="bonus-title">Laporan Kondisi Berkala</div>
+      <p class="bonus-desc">Laporan digital menyeluruh dengan foto kondisi komponen sebelum dan sesudah pengerjaan, dikirim melalui WhatsApp dalam format PDF yang bisa Anda simpan.</p>
+      <div class="bonus-value"><s>Rp 50.000</s> Gratis selamanya</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA UTAMA -->
+<section id="cta">
+  <div class="cta-inner reveal">
+    <div class="tag">Booking Sekarang</div>
+    <h2>
+      Jadwalkan Servis
+      <span>Kendaraan Anda.</span>
+    </h2>
+    <p>Isi nomor WhatsApp Anda dan tim kami akan menghubungi dalam 15 menit untuk konfirmasi jadwal dan estimasi biaya awal.</p>
+    <div class="cta-form">
+      <input type="tel" class="cta-input" placeholder="Nomor WhatsApp Anda (contoh: 081234567890)" id="waInput">
+      <button class="cta-submit" onclick="submitWA()">Booking</button>
+    </div>
+    <p class="cta-note">Atau hubungi langsung: <strong style="color:var(--light)">0812-3456-7890</strong> &nbsp;|&nbsp; Senin - Sabtu, 08.00 - 18.00 WIB</p>
+  </div>
+</section>
+
+<!-- GARANSI -->
+<section id="garansi">
+  <div class="garansi-inner">
+    <div class="garansi-seal reveal">
+      <div class="garansi-seal-num">30</div>
+      <div class="garansi-seal-unit">Hari</div>
+      <div class="garansi-seal-label">GARANSI</div>
+    </div>
+    <div class="garansi-content reveal">
+      <div class="tag">Jaminan Kepuasan</div>
+      <h2>Kami Berdiri di Balik <span>Setiap Pengerjaan.</span></h2>
+      <p>Garansi bukan formalitas. Ini adalah komitmen tertulis kami kepada setiap pelanggan bahwa pekerjaan yang kami lakukan adalah pekerjaan yang kami pertanggungjawabkan.</p>
+      <ul class="garansi-points">
+        <li>Jika masalah yang sama berulang dalam 30 hari, kami tangani ulang tanpa biaya</li>
+        <li>Garansi berlaku untuk seluruh jenis layanan servis dan perbaikan</li>
+        <li>Klaim garansi cukup melalui WhatsApp, tidak perlu prosedur panjang</li>
+        <li>Spare part original bergaransi langsung dari distributor resmi</li>
+        <li>Mekanik yang mengerjakan adalah mekanik yang bertanggung jawab penuh</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- NB -->
+<section id="nb">
+  <div class="nb-box reveal">
+    <div class="nb-label">Catatan Penting</div>
+    <p>
+      <strong>Jam operasional:</strong> Senin hingga Sabtu, pukul 08.00 - 18.00 WIB. Kami tidak menerima kendaraan masuk setelah pukul 16.30 WIB untuk memastikan pengerjaan selesai hari yang sama.
+    </p>
+    <p>
+      <strong>Booking wajib untuk layanan antar jemput.</strong> Layanan penjemputan tersedia dalam radius 15 km dari lokasi bengkel dan harus dijadwalkan minimal 1 hari sebelumnya.
+    </p>
+    <p>
+      <strong>Harga yang ditampilkan adalah estimasi.</strong> Biaya final bergantung pada kondisi aktual kendaraan yang hanya bisa ditentukan setelah inspeksi langsung. Kami selalu meminta persetujuan Anda sebelum pengerjaan dimulai.
+    </p>
+    <p>
+      Garansi pengerjaan tidak berlaku jika kendaraan mengalami kecelakaan, modifikasi oleh pihak lain, atau kerusakan akibat kelalaian pemilik setelah keluar dari bengkel kami.
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">Mesin<span>Kuat</span></div>
+  <p class="footer-copy">Hak Cipta 2025 MesinKuat. Semua hak dilindungi.</p>
+</footer>
+
+<script>
+  /* ── SCROLL REVEAL ── */
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+
+  /* ── ACCORDION ALASAN ── */
+  function toggleReason(el) {
+    const isOpen = el.classList.contains('open');
+    document.querySelectorAll('.reason-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) el.classList.add('open');
+  }
+  // open first by default
+  document.querySelector('.reason-item')?.classList.add('open');
+
+  /* ── TESTIMONI SLIDER ── */
+  let testiPos = 0;
+  const track = document.getElementById('testiTrack');
+
+  function getVisibleCount() {
+    const w = window.innerWidth;
+    if (w < 600) return 1;
+    if (w < 900) return 2;
+    return 3;
+  }
+
+  function slideTesti(dir) {
+    const cards = track.querySelectorAll('.testi-card').length;
+    const visible = getVisibleCount();
+    const max = cards - visible;
+    testiPos = Math.max(0, Math.min(max, testiPos + dir));
+    const cardWidth = track.querySelector('.testi-card').offsetWidth + 20;
+    track.style.transform = `translateX(-${testiPos * cardWidth}px)`;
+  }
+
+  /* ── COUNTDOWN ── */
+  function getDeadline() {
+    const stored = localStorage.getItem('mkDeadline');
+    if (stored) return new Date(stored);
+    const d = new Date();
+    d.setDate(d.getDate() + 7);
+    d.setHours(23, 59, 59, 0);
+    try { localStorage.setItem('mkDeadline', d.toISOString()); } catch(e){}
+    return d;
+  }
+
+  const deadline = getDeadline();
+
+  function updateCD() {
+    const now = new Date();
+    const diff = Math.max(0, deadline - now);
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000)  / 60000);
+    const secs  = Math.floor((diff % 60000)    / 1000);
+    document.getElementById('cdDays').textContent  = String(days).padStart(2,'0');
+    document.getElementById('cdHours').textContent = String(hours).padStart(2,'0');
+    document.getElementById('cdMins').textContent  = String(mins).padStart(2,'0');
+    document.getElementById('cdSecs').textContent  = String(secs).padStart(2,'0');
+  }
+
+  updateCD();
+  setInterval(updateCD, 1000);
+
+  /* ── CTA SUBMIT ── */
+  function submitWA() {
+    const val = document.getElementById('waInput').value.trim();
+    const num = val.replace(/\D/g, '');
+    if (num.length < 10) {
+      alert('Silakan masukkan nomor WhatsApp yang valid.');
+      return;
+    }
+    const text = encodeURIComponent('Halo MesinKuat, saya ingin booking servis kendaraan. Mohon informasi jadwal dan estimasi biaya.');
+    window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');
+  }
+</script>
+
+</body>
+</html>
